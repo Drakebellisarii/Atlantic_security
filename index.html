@@ -815,15 +815,79 @@
             const discountPercent = document.getElementById('discountPercent').value;
             
             const subject = `Special Offer for ${customerName} - Save ${discountPercent}% on Quote ${quoteId}`;
+            const html = generateEmailHTML();
             
-            // Copy HTML first
-            copyToClipboard();
+            // Generate EML file content
+            const emlContent = generateEMLFile(subject, html);
+            const blob = new Blob([emlContent], { type: 'message/rfc822' });
+            const url = URL.createObjectURL(blob);
             
-            // Create mailto link for Outlook
-            const mailtoLink = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent('Please switch to HTML view to see the formatted email. The HTML code has been copied to your clipboard - paste it into a new HTML email in Outlook.')}`;
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `atlantic-security-email-${customerName.replace(/\s+/g, '-').toLowerCase()}-${quoteId}.eml`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
             
-            // Open mailto
-            window.location.href = mailtoLink;
+            // Show success message
+            const successMsg = document.getElementById('successMessage');
+            successMsg.innerHTML = `
+                <div style="display: flex; align-items: flex-start; gap: 15px;">
+                    <div>
+                        <strong style="font-size: 18px;">Success! EML file downloaded!</strong>
+                        <br><br>
+                        <strong style="color: #2c5aa0;">Next Steps:</strong>
+                        <ol style="margin: 15px 0 0 25px; line-height: 1.8; font-size: 15px;">
+                            <li>Double-click the downloaded .eml file</li>
+                            <li>It will automatically open in Outlook</li>
+                            <li>Add the recipient's email address</li>
+                            <li>Click Send!</li>
+                        </ol>
+                        <br>
+                        <strong style="color: #2c5aa0;">Alternative:</strong>
+                        <ul style="margin: 15px 0 0 25px; line-height: 1.8; font-size: 15px;">
+                            <li>Drag the .eml file directly into Outlook</li>
+                            <li>Or right-click the file and "Open with" → Outlook</li>
+                        </ul>
+                    </div>
+                </div>
+            `;
+            successMsg.classList.add('show');
+            setTimeout(() => {
+                successMsg.classList.remove('show');
+            }, 15000);
+        }
+        
+        // Generate EML file content
+        function generateEMLFile(subject, htmlContent) {
+            const boundary = '----=_NextPart_' + Math.random().toString(36).substr(2, 9);
+            const date = new Date().toUTCString();
+            
+            return `From: Atlantic Security <noreply@atlanticsecurity.com>
+To: 
+Subject: ${subject}
+Date: ${date}
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="${boundary}"
+X-Mailer: Atlantic Security Email Generator
+
+--${boundary}
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+
+You have a special offer from Atlantic Security!
+
+Please view this email in HTML format to see the complete formatted message.
+
+--${boundary}
+Content-Type: text/html; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+
+${htmlContent}
+
+--${boundary}--
+`;
         }
 
         // Download HTML file
