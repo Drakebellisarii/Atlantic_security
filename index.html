@@ -520,6 +520,11 @@
                         </div>
                         
                         <div class="form-group">
+                            <label for="customerEmail" class="required">Customer Email</label>
+                            <input type="email" id="customerEmail" name="customerEmail" required placeholder="john@example.com">
+                        </div>
+                        
+                        <div class="form-group">
                             <label for="quoteId" class="required">Quote ID</label>
                             <input type="text" id="quoteId" name="quoteId" required placeholder="QT-2024-001">
                         </div>
@@ -616,6 +621,7 @@
         function updatePreview() {
             const customerName = document.getElementById('customerName').value || 'Customer Name';
             const customerId = document.getElementById('customerId').value || generateCustomerId();
+            const customerEmail = document.getElementById('customerEmail').value || 'customer@example.com';
             const quoteId = document.getElementById('quoteId').value || 'QT-XXXX-XXX';
             const originalPrice = document.getElementById('originalPrice').value || '0.00';
             const discountPercent = document.getElementById('discountPercent').value || '0';
@@ -625,7 +631,7 @@
             const preview = `
                 <div style="border: 1px solid #e0e0e0; border-radius: 12px; padding: 25px; background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                     <div style="margin-bottom: 20px;">
-                        <strong style="color: #2c5aa0; font-size: 16px;">Customer ID:</strong> ${customerId}
+                        <strong style="color: #2c5aa0; font-size: 16px;">To:</strong> ${customerEmail}
                     </div>
                     <div style="margin-bottom: 20px;">
                         <strong style="color: #2c5aa0; font-size: 16px;">Subject:</strong> Special Offer for ${customerName} - Save ${discountPercent}% on Quote ${quoteId}
@@ -634,6 +640,7 @@
                     <div style="font-size: 13px; color: #666; line-height: 1.6;">
                         <strong>Customer:</strong> ${customerName}<br>
                         <strong>Customer ID:</strong> ${customerId}<br>
+                        <strong>Customer Email:</strong> ${customerEmail}<br>
                         <strong>Quote ID:</strong> ${quoteId}<br>
                         <strong>Original Price:</strong> $${parseFloat(originalPrice).toFixed(2)}<br>
                         <strong>Discount:</strong> ${discountPercent}%<br>
@@ -649,6 +656,7 @@
         function generateEmailHTML() {
             const customerName = document.getElementById('customerName').value;
             const customerId = document.getElementById('customerId').value || generateCustomerId();
+            const customerEmail = document.getElementById('customerEmail').value;
             const quoteId = document.getElementById('quoteId').value;
             const originalPrice = parseFloat(document.getElementById('originalPrice').value).toFixed(2);
             const discountPercent = document.getElementById('discountPercent').value;
@@ -658,6 +666,7 @@
                 quote_id: quoteId,
                 original_price: originalPrice,
                 discount: discountPercent,
+                email: customerEmail,
                 name: customerName
             }).toString();
             
@@ -811,14 +820,15 @@
             
             const customerName = document.getElementById('customerName').value;
             const customerId = document.getElementById('customerId').value || generateCustomerId();
+            const customerEmail = document.getElementById('customerEmail').value;
             const quoteId = document.getElementById('quoteId').value;
             const discountPercent = document.getElementById('discountPercent').value;
             
             const subject = `Special Offer for ${customerName} - Save ${discountPercent}% on Quote ${quoteId}`;
             const html = generateEmailHTML();
             
-            // Generate MHT file content
-            const mhtContent = generateMHTFile(subject, html);
+            // Generate MHT file content with recipient email
+            const mhtContent = generateMHTFile(subject, html, customerEmail);
             const blob = new Blob([mhtContent], { type: 'message/rfc822' });
             const url = URL.createObjectURL(blob);
             
@@ -840,16 +850,12 @@
                         <strong style="color: #2c5aa0;">Next Steps:</strong>
                         <ol style="margin: 15px 0 0 25px; line-height: 1.8; font-size: 15px;">
                             <li>Double-click the downloaded .mht file</li>
-                            <li>It will open in Outlook with all formatting intact</li>
-                            <li>Add the recipient's email address</li>
+                            <li>It will open in Outlook with recipient email filled</li>
+                            <li>Review the email content and formatting</li>
                             <li>Click Send!</li>
                         </ol>
                         <br>
-                        <strong style="color: #2c5aa0;">Alternative:</strong>
-                        <ul style="margin: 15px 0 0 25px; line-height: 1.8; font-size: 15px;">
-                            <li>Drag the .mht file directly into Outlook</li>
-                            <li>Or right-click and "Open with" → Outlook</li>
-                        </ul>
+                        <strong style="color: #2c5aa0;">Recipient:</strong> ${customerEmail}
                     </div>
                 </div>
             `;
@@ -860,12 +866,12 @@
         }
         
         // Generate MHT file content
-        function generateMHTFile(subject, htmlContent) {
+        function generateMHTFile(subject, htmlContent, recipientEmail) {
             const boundary = '----=_NextPart_' + Math.random().toString(36).substr(2, 9);
             const date = new Date().toUTCString();
             
             return `From: Atlantic Security <noreply@atlanticsecurity.com>
-To: 
+To: ${recipientEmail}
 Subject: ${subject}
 Date: ${date}
 MIME-Version: 1.0
@@ -944,7 +950,7 @@ ${htmlContent}
 
         // Form validation
         function validateForm() {
-            const required = ['customerName', 'customerId', 'quoteId', 'originalPrice', 'discountPercent'];
+            const required = ['customerName', 'customerId', 'customerEmail', 'quoteId', 'originalPrice', 'discountPercent'];
             let isValid = true;
             
             required.forEach(field => {
@@ -968,7 +974,7 @@ ${htmlContent}
 
         // Add event listeners for real-time preview and scroll
         document.addEventListener('DOMContentLoaded', function() {
-            const inputs = ['customerName', 'customerId', 'quoteId', 'originalPrice', 'discountPercent'];
+            const inputs = ['customerName', 'customerId', 'customerEmail', 'quoteId', 'originalPrice', 'discountPercent'];
             inputs.forEach(id => {
                 document.getElementById(id).addEventListener('input', updatePreview);
             });
