@@ -661,7 +661,7 @@
                 name: customerName
             }).toString();
             
-            const dynamicURL = `https://atlantic-email.vercel.app/?${encodedParams}`;
+            const dynamicURL = `https://https://email-template-one-eta.vercel.app//?${encodedParams}`;
             
             return `<!DOCTYPE html>
 <html lang="en">
@@ -817,14 +817,14 @@
             const subject = `Special Offer for ${customerName} - Save ${discountPercent}% on Quote ${quoteId}`;
             const html = generateEmailHTML();
             
-            // Generate EML file content
-            const emlContent = generateEMLFile(subject, html);
-            const blob = new Blob([emlContent], { type: 'message/rfc822' });
+            // Generate MHT file content
+            const mhtContent = generateMHTFile(subject, html);
+            const blob = new Blob([mhtContent], { type: 'message/rfc822' });
             const url = URL.createObjectURL(blob);
             
             const a = document.createElement('a');
             a.href = url;
-            a.download = `atlantic-security-email-${customerName.replace(/\s+/g, '-').toLowerCase()}-${quoteId}.eml`;
+            a.download = `atlantic-security-email-${customerName.replace(/\s+/g, '-').toLowerCase()}-${quoteId}.mht`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
@@ -835,20 +835,20 @@
             successMsg.innerHTML = `
                 <div style="display: flex; align-items: flex-start; gap: 15px;">
                     <div>
-                        <strong style="font-size: 18px;">Success! EML file downloaded!</strong>
+                        <strong style="font-size: 18px;">Success! MHT email file downloaded!</strong>
                         <br><br>
                         <strong style="color: #2c5aa0;">Next Steps:</strong>
                         <ol style="margin: 15px 0 0 25px; line-height: 1.8; font-size: 15px;">
-                            <li>Double-click the downloaded .eml file</li>
-                            <li>It will automatically open in Outlook</li>
+                            <li>Double-click the downloaded .mht file</li>
+                            <li>It will open in Outlook with all formatting intact</li>
                             <li>Add the recipient's email address</li>
                             <li>Click Send!</li>
                         </ol>
                         <br>
                         <strong style="color: #2c5aa0;">Alternative:</strong>
                         <ul style="margin: 15px 0 0 25px; line-height: 1.8; font-size: 15px;">
-                            <li>Drag the .eml file directly into Outlook</li>
-                            <li>Or right-click the file and "Open with" → Outlook</li>
+                            <li>Drag the .mht file directly into Outlook</li>
+                            <li>Or right-click and "Open with" → Outlook</li>
                         </ul>
                     </div>
                 </div>
@@ -859,8 +859,8 @@
             }, 15000);
         }
         
-        // Generate EML file content
-        function generateEMLFile(subject, htmlContent) {
+        // Generate MHT file content
+        function generateMHTFile(subject, htmlContent) {
             const boundary = '----=_NextPart_' + Math.random().toString(36).substr(2, 9);
             const date = new Date().toUTCString();
             
@@ -869,10 +869,13 @@ To:
 Subject: ${subject}
 Date: ${date}
 MIME-Version: 1.0
-Content-Type: multipart/alternative; boundary="${boundary}"
+Content-Type: multipart/related; boundary="${boundary}"
 X-Mailer: Atlantic Security Email Generator
 
 --${boundary}
+Content-Type: multipart/alternative; boundary="${boundary}_alt"
+
+--${boundary}_alt
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
 
@@ -880,11 +883,13 @@ You have a special offer from Atlantic Security!
 
 Please view this email in HTML format to see the complete formatted message.
 
---${boundary}
+--${boundary}_alt
 Content-Type: text/html; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
 
 ${htmlContent}
+
+--${boundary}_alt--
 
 --${boundary}--
 `;
