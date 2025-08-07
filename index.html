@@ -338,6 +338,17 @@
             box-shadow: 0 12px 35px rgba(16, 185, 129, 0.4);
         }
         
+        .btn-info {
+            background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+            color: white;
+            box-shadow: 0 8px 25px rgba(14, 165, 233, 0.3);
+        }
+        
+        .btn-info:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(14, 165, 233, 0.4);
+        }
+        
         .btn::before {
             content: '';
             width: 20px;
@@ -572,6 +583,9 @@
                 </button>
                 <button type="button" class="btn btn-success" onclick="downloadHTML()">
                     Download HTML File
+                </button>
+                <button type="button" class="btn btn-info" onclick="copyCompleteHTML()">
+                    Copy Complete HTML
                 </button>
             </div>
             
@@ -946,6 +960,84 @@ ${htmlContent}
             setTimeout(() => {
                 successMsg.classList.remove('show');
             }, 15000);
+        }
+
+        // Copy complete HTML document
+        function copyCompleteHTML() {
+            if (!validateForm()) return;
+            
+            const customerName = document.getElementById('customerName').value;
+            const customerId = document.getElementById('customerId').value || generateCustomerId();
+            const customerEmail = document.getElementById('customerEmail').value;
+            const quoteId = document.getElementById('quoteId').value;
+            const originalPrice = parseFloat(document.getElementById('originalPrice').value).toFixed(2);
+            const discountPercent = document.getElementById('discountPercent').value;
+            
+            const html = generateEmailHTML();
+            
+            // Create complete HTML document
+            const completeHTML = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atlantic Security Email</title>
+    <style>
+        body { 
+            margin: 0; 
+            padding: 0; 
+            font-family: Arial, sans-serif; 
+            background: #f5f7fa; 
+            color: #333;
+        }
+        .email-container { 
+            max-width: 600px; 
+            margin: 0 auto; 
+            background: #ffffff;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        ${html}
+    </div>
+</body>
+</html>`;
+            
+            // Copy to clipboard
+            navigator.clipboard.writeText(completeHTML).then(() => {
+                const successMsg = document.getElementById('successMessage');
+                successMsg.innerHTML = `
+                    <div style="display: flex; align-items: flex-start; gap: 15px;">
+                        <div>
+                            <strong style="font-size: 18px;">Success! Complete HTML copied to clipboard!</strong>
+                            <br><br>
+                            <strong style="color: #2c5aa0;">Next Steps:</strong>
+                            <ol style="margin: 15px 0 0 25px; line-height: 1.8; font-size: 15px;">
+                                <li>Open your email client (Outlook, Gmail, etc.)</li>
+                                <li>Create a new email</li>
+                                <li>Switch to HTML view (if available)</li>
+                                <li>Paste the copied HTML (Ctrl+V or Cmd+V)</li>
+                                <li>Add recipient email and send!</li>
+                            </ol>
+                            <br>
+                            <strong style="color: #2c5aa0;">Works with:</strong>
+                            <ul style="margin: 15px 0 0 25px; line-height: 1.8; font-size: 15px;">
+                                <li>Microsoft Outlook</li>
+                                <li>Gmail (HTML view)</li>
+                                <li>Apple Mail</li>
+                                <li>Most email clients</li>
+                            </ul>
+                        </div>
+                    </div>
+                `;
+                successMsg.classList.add('show');
+                setTimeout(() => {
+                    successMsg.classList.remove('show');
+                }, 15000);
+            }).catch(err => {
+                alert('Failed to copy HTML to clipboard. Please try again.');
+            });
         }
 
         // Form validation
